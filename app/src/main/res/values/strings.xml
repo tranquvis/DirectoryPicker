@@ -1,0 +1,18 @@
+<resources>
+    <string name="simple_yes">yes</string>
+    <string name="simple_create">create</string>
+    <string name="simple_abort">abort</string>
+    <string name="simple_rename">rename</string>
+    <string name="simple_delete">delete</string>
+
+    <string name="select_directory">Select</string>
+
+    <string name="new_folder">New folder</string>
+    <string name="emptyFolderName">Please enter the title!</string>
+    <string name="folderAlreadyAvailable">This folder is already available!</string>
+    <string name="folderCreationFailed">Failed to create folder</string>
+    <string name="folderDeletionFailed">Failed to delete folder</string>
+    <string name="folderRenamingFailed">Failed to rename folder</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="rename_folder">Rename folder</string>
+</resources>
