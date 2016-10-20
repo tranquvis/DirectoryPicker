@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,43 +27,44 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import tranquvis.directorypicker.Interfaces.FolderCreateTitleListener;
-import tranquvis.directorypicker.Adapters.LocalFileListAdapter;
-import tranquvis.directorypicker.Interfaces.LocalFolderBrowserDialogListener;
-import tranquvis.directorypicker.Interfaces.LocalFolderRenameTitleListener;
+import tranquvis.directorypicker.Interfaces.CreateDirectoryDialogListener;
+import tranquvis.directorypicker.Adapters.ElementListAdapter;
+import tranquvis.directorypicker.Interfaces.DirectoryPickerListener;
+import tranquvis.directorypicker.Interfaces.RenameDirectoryDialogListener;
 import tranquvis.directorypicker.R;
 
 
-public class LocalFolderBrowserDialog extends Dialog
+public class DirectoryPickerDialog extends Dialog
         implements View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
-    protected FileFilter filter = new FileFilter() {
+
+    private FileFilter filter = new FileFilter() {
         @Override
         public boolean accept(File file)
         {
-            if (!file.canRead()) return false;
-            return file.isDirectory();
+            return file.canRead() && file.isDirectory();
         }
     };
 
-    protected Activity activity;
-    protected Button buttonSelect;
-    protected ImageButton buttonMenu;
-    protected TextView titleTextView;
+    private Activity activity;
+    private Button buttonSelect;
+    private ImageButton buttonMenu;
+    private TextView titleTextView;
 
-    protected ListView listBox;
-    protected LocalFileListAdapter adapter;
-    protected ArrayList<File> folderList = new ArrayList<>();
+    private ListView listBox;
+    private ElementListAdapter adapter;
+    private ArrayList<File> dirList = new ArrayList<>();
 
-    protected LocalFolderBrowserDialogListener fbdListener;
+    private DirectoryPickerListener fbdListener;
 
-    public File actFolder;
+    private File actDir;
 
-    public LocalFolderBrowserDialog(Activity activity, File initFolder) {
+    public DirectoryPickerDialog(Activity activity, File initDir) {
         super(activity);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_local_folder_browser);
+        setContentView(R.layout.dialog_dir_picker);
 
-        getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
 
         this.activity = activity;
 
@@ -76,44 +78,44 @@ public class LocalFolderBrowserDialog extends Dialog
 
         listBox = (ListView) findViewById(R.id.listView);
 
-        adapter = new LocalFileListAdapter(getContext(), R.layout.listview_item_file, folderList);
+        adapter = new ElementListAdapter(getContext(), dirList);
         listBox.setAdapter(adapter);
         listBox.setOnItemClickListener(this);
         listBox.setOnItemLongClickListener(this);
 
-        if(initFolder == null)
+        if(initDir == null)
         {
-            actFolder = Environment.getExternalStorageDirectory();
+            actDir = Environment.getExternalStorageDirectory();
         }
-        else actFolder = initFolder;
+        else actDir = initDir;
 
-        loadFolder(actFolder);
+        loadDir(actDir);
     }
 
-    public void setFolderBrowserDialogListener(LocalFolderBrowserDialogListener listener) {
+    public void setDirectoryPickerListener(DirectoryPickerListener listener) {
         this.fbdListener = listener;
     }
 
-    private void loadFolder(File folder)
+    private void loadDir(File dir)
     {
-        actFolder = folder;
-        titleTextView.setText(folder.toString());
+        actDir = dir;
+        titleTextView.setText(dir.toString());
 
-        folderList.clear();
-        if (folder.getParentFile() != null) {
-            folderList.add(new File("..."));
+        dirList.clear();
+        if (dir.getParentFile() != null) {
+            dirList.add(new File("..."));
         }
 
-        File[] contents = folder.listFiles(filter);
+        File[] contents = dir.listFiles(filter);
         if(contents != null)
-            Collections.addAll(folderList, contents);
+            Collections.addAll(dirList, contents);
 
         adapter.notifyDataSetChanged();
     }
 
     protected void Refresh()
     {
-        loadFolder(actFolder);
+        loadDir(actDir);
     }
 
     @Override
@@ -121,14 +123,14 @@ public class LocalFolderBrowserDialog extends Dialog
         int i = v.getId();
         if (i == R.id.button_select)
         {
-            if (fbdListener != null) fbdListener.onFolderSelected(actFolder);
+            if (fbdListener != null) fbdListener.onDirPicked(actDir);
             this.dismiss();
 
         }
         else if (i == R.id.imageButton_menu)
         {
             PopupMenu popupMenu = new PopupMenu(activity, v);
-            popupMenu.inflate(R.menu.menu_folder_browser);
+            popupMenu.inflate(R.menu.menu_dir_picker);
             popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
             {
                 @Override
@@ -143,18 +145,18 @@ public class LocalFolderBrowserDialog extends Dialog
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         MenuInflater menuInflater = activity.getMenuInflater();
-        menuInflater.inflate(R.menu.menu_folder_browser, menu);
+        menuInflater.inflate(R.menu.menu_dir_picker, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int i = item.getItemId();
         if (i == R.id.new_folder)
         {
-            CreateNewFolder();
+            CreateNewDirectory();
 
         }
         return true;
@@ -163,58 +165,49 @@ public class LocalFolderBrowserDialog extends Dialog
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
-        File f = folderList.get(position);
-        if(f.getPath() == "...")
-            loadParentFolder();
+        File f = dirList.get(position);
+        if(f.getPath().equals("..."))
+            loadParentDir();
         else
-            loadFolder(f);
+            loadDir(f);
     }
 
-    private void loadParentFolder()
+    private void loadParentDir()
     {
-        loadFolder(actFolder.getParentFile());
+        loadDir(actDir.getParentFile());
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
         PopupMenu popupMenu = new PopupMenu(activity, view);
-        popupMenu.inflate(R.menu.context_menu_folder);
+        popupMenu.inflate(R.menu.context_menu_element);
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 int i = item.getItemId();
                 if (i == R.id.delete)
-                {
-                    DeleteFolder(folderList.get(position));
-
-                }
+                    DeleteDirectory(dirList.get(position));
                 else if (i == R.id.rename)
-                {
-                    RenameFolder(folderList.get(position));
-
-                }
+                    RenameDirectory(dirList.get(position));
                 return true;
             }
 
         });
-
         popupMenu.show();
-
         return true;
     }
 
-    private void CreateNewFolder() {
-        CreateFolderDialog dialog = new CreateFolderDialog(activity);
-        dialog.setTitleSelectedListener(new FolderCreateTitleListener() {
+    private void CreateNewDirectory() {
+        CreateDirectoryDialog dialog = new CreateDirectoryDialog(activity);
+        dialog.setListener(new CreateDirectoryDialogListener() {
             @Override
-            public void OnFolderCreateTitleSelected(String title) {
-                File folder = new File(actFolder.getPath(), title);
-
-                if(folder.mkdir()) {
-                    if (actFolder.getParentFile() != null)
-                        folderList.add(1, folder);
+            public void OnDirCreationRequested(String title) {
+                File dir = new File(actDir.getPath(), title);
+                if(dir.mkdir()) {
+                    if (actDir.getParentFile() != null)
+                        dirList.add(1, dir);
                     else
-                        folderList.add(folder);
+                        dirList.add(dir);
 
                     listBox.setSelectionAfterHeaderView();
                     adapter.notifyDataSetChanged();
@@ -227,23 +220,23 @@ public class LocalFolderBrowserDialog extends Dialog
         });
 
         List<String> titles = new ArrayList<>();
-        for (File f : folderList)
+        for (File f : dirList)
             titles.add(f.getName());
         dialog.setBlackList(titles);
 
         dialog.show();
     }
 
-    private void DeleteFolder(final File folder) {
+    private void DeleteDirectory(final File dir) {
         new AlertDialog.Builder(activity)
                 .setTitle(R.string.delete_folder)
-                .setMessage(folder.getName())
+                .setMessage(dir.getName())
                 .setPositiveButton(R.string.simple_yes, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (folder.delete())
+                        if (dir.delete())
                         {
-                            folderList.remove(folder);
+                            dirList.remove(dir);
                             adapter.notifyDataSetChanged();
                         }
                         else
@@ -262,16 +255,16 @@ public class LocalFolderBrowserDialog extends Dialog
                 .show();
     }
 
-    private void RenameFolder(File folder) {
-        RenameLocalFolderDialog dialog = new RenameLocalFolderDialog(activity, folder);
-        dialog.setTitleSelectedListener(new LocalFolderRenameTitleListener(){
+    private void RenameDirectory(File dir) {
+        RenameDirectoryDialog dialog = new RenameDirectoryDialog(activity, dir);
+        dialog.setListener(new RenameDirectoryDialogListener(){
 
             @Override
-            public void OnFolderRenameTitleSelected(File file, String title) {
+            public void OnRenameRequested(File file, String title) {
                 File newFile = new File(file.getPath().substring(0,file.getPath().lastIndexOf('/')),title);
 
                 if(file.renameTo(newFile)) {
-                    folderList.set(folderList.indexOf(file), newFile);
+                    dirList.set(dirList.indexOf(file), newFile);
                     adapter.notifyDataSetChanged();
                 }
                 else
@@ -281,7 +274,7 @@ public class LocalFolderBrowserDialog extends Dialog
         });
 
         List<String> titles = new ArrayList<>();
-        for (File f : folderList) {
+        for (File f : dirList) {
             titles.add(f.getName());
         }
         dialog.setBlackList(titles);

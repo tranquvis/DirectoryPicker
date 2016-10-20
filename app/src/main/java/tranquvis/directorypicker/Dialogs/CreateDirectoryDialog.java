@@ -10,34 +10,35 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import tranquvis.directorypicker.Interfaces.FolderCreateTitleListener;
+import tranquvis.directorypicker.Interfaces.CreateDirectoryDialogListener;
 import tranquvis.directorypicker.R;
 
 /**
  * Created by Andi on 04.05.2015.
  */
-public class CreateFolderDialog extends Dialog implements View.OnClickListener {
-    protected EditText editTextTitle;
-    protected Button buttonCreate;
+public class CreateDirectoryDialog extends Dialog implements View.OnClickListener {
+    private EditText editTextTitle;
+    private Button buttonCreate;
 
-    protected List<String> blackList;
-    protected FolderCreateTitleListener folderTitleListener;
+    private List<String> blackList;
+    private CreateDirectoryDialogListener listener;
 
-    public CreateFolderDialog(Activity activity) {
+    public CreateDirectoryDialog(Activity activity) {
         super(activity);
         setTitle(R.string.new_folder);
-        setContentView(R.layout.dialog_create_folder);
+        setContentView(R.layout.dialog_create_dir);
 
-        getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
 
         editTextTitle = (EditText)findViewById(R.id.editText_title);
         buttonCreate = (Button) findViewById(R.id.button_create);
         buttonCreate.setOnClickListener(this);
     }
 
-    public void setTitleSelectedListener(FolderCreateTitleListener folderTitleListener)
+    public void setListener(CreateDirectoryDialogListener listener)
     {
-        this.folderTitleListener = folderTitleListener;
+        this.listener = listener;
     }
 
     public void setBlackList(List<String> titles)
@@ -54,7 +55,7 @@ public class CreateFolderDialog extends Dialog implements View.OnClickListener {
         else if(blackList != null && blackList.contains(text))
             Toast.makeText(getContext(), R.string.folderAlreadyAvailable, Toast.LENGTH_SHORT).show();
         else {
-            folderTitleListener.OnFolderCreateTitleSelected(text);
+            listener.OnDirCreationRequested(text);
             dismiss();
         }
     }

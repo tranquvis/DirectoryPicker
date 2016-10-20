@@ -4,7 +4,7 @@
     <item android:state_pressed="true">
         <shape>
             <solid
-                android:color="@color/colorPrimary" />
+                android:color="?attr/colorPrimary" />
             <padding
                 android:left="10dp"
                 android:top="10dp"
@@ -15,7 +15,7 @@
     <item android:state_focused="true">
         <shape>
             <solid
-                android:color="@color/colorPrimaryDark" />
+                android:color="?attr/colorPrimaryDark" />
             <padding
                 android:left="10dp"
                 android:top="10dp"
@@ -26,7 +26,7 @@
     <item>
         <shape>
             <solid
-                android:color="@color/colorPrimary" />
+                android:color="?attr/colorPrimary" />
             <padding
                 android:left="10dp"
                 android:top="10dp"
