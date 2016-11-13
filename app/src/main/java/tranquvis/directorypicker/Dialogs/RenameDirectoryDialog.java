@@ -2,7 +2,10 @@ package tranquvis.directorypicker.Dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.os.SystemClock;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -35,8 +38,11 @@ public class RenameDirectoryDialog extends Dialog implements View.OnClickListene
         getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         editTextTitle = (EditText)findViewById(R.id.editText_title);
-        title = "";
+        title = file.getName();
         editTextTitle.setText(title);
+        // focus text box and show keyboard
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
         buttonRename = (Button) findViewById(R.id.button_rename);
         buttonRename.setOnClickListener(this);
 

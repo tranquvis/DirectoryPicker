@@ -3,6 +3,7 @@ package tranquvis.directorypicker.Dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -32,6 +33,9 @@ public class CreateDirectoryDialog extends Dialog implements View.OnClickListene
                 LinearLayout.LayoutParams.WRAP_CONTENT);
 
         editTextTitle = (EditText)findViewById(R.id.editText_title);
+        // focus text box and show keyboard
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
         buttonCreate = (Button) findViewById(R.id.button_create);
         buttonCreate.setOnClickListener(this);
     }
